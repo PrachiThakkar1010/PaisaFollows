@@ -1,0 +1,48 @@
+### 1. Sign up (should give 201 Created)
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Test User",
+  "email": "test1@example.com",
+  "password": "password123",
+  "phone": "9876543210",
+  "dateOfBirth": "2003-05-17",
+  "pan": "ABCDE1234F"
+}
+
+### 2. Same email again (should give 409 ALREADY_EXISTS)
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Someone Else",
+  "email": "test1@example.com",
+  "password": "password123",
+  "dateOfBirth": "2001-01-01",
+  "pan": "ZZZZZ9999Z"
+}
+
+### 3. Bad PAN and bad email (should give 400 INVALID_INPUT)
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Bad Data",
+  "email": "not-an-email",
+  "password": "password123",
+  "dateOfBirth": "2001-01-01",
+  "pan": "12345"
+}
+
+### 4. Under 18 (should give 400 INVALID_INPUT)
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Young User",
+  "email": "young@example.com",
+  "password": "password123",
+  "dateOfBirth": "2012-01-01",
+  "pan": "YOUNG1234Y"
+}

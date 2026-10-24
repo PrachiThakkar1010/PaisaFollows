@@ -7,6 +7,8 @@ public enum ErrorCode {
     MARKET_CLOSED(422),
     NO_PRICE(422),
     INVALID_ORDER(400),
+    INVALID_INPUT(400),
+    ALREADY_EXISTS(409),
     NOT_FOUND(404),
     UNAUTHORIZED(401);
 
