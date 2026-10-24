@@ -194,3 +194,42 @@ Content-Type: application/json
 
 ### 37. Balance history (written by the trigger)
 GET http://localhost:8080/api/wallet/history?limit=5
+
+### 38. Search (LIKE)
+GET http://localhost:8080/api/stocks/search?q=tat
+
+### 39. Sector list (DISTINCT)
+GET http://localhost:8080/api/stocks/sectors
+
+### 40. Screener: two sectors, a price range, best performers first, page 1 (IN, BETWEEN, ORDER BY, LIMIT, OFFSET)
+GET http://localhost:8080/api/stocks?sectors=Healthcare,Information Technology&minPrice=500&maxPrice=5000&sort=change&dir=desc&page=0&size=5
+
+### 41. Screener page 2
+GET http://localhost:8080/api/stocks?sort=price&dir=asc&page=1&size=10
+
+### 42. Bad sort column (expect 400: protects against SQL injection)
+GET http://localhost:8080/api/stocks?sort=ltp;DROP TABLE USER
+
+### 43. Top gainers and losers (view)
+GET http://localhost:8080/api/stocks/movers?type=gainers&limit=5
+
+###
+GET http://localhost:8080/api/stocks/movers?type=losers&limit=5
+
+### 44. Stock page (NATURAL JOIN + correlated subquery + ALL)
+GET http://localhost:8080/api/stocks/TCS
+
+### 45. Similar stocks (SELF JOIN)
+GET http://localhost:8080/api/stocks/TCS/similar
+
+### 46. What can I afford (CROSS JOIN)
+GET http://localhost:8080/api/stocks/affordable?limit=10
+
+### 47. Sector heatmap (materialized view)
+GET http://localhost:8080/api/market/sectors
+
+### 48. Sector ranking, only sectors with 3+ stocks (GROUP BY + HAVING)
+GET http://localhost:8080/api/market/sector-performance?minStocks=3
+
+### 49. Market overview (RIGHT JOIN, scalar subquery)
+GET http://localhost:8080/api/market/overview
