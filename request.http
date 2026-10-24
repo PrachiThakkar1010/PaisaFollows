@@ -233,3 +233,60 @@ GET http://localhost:8080/api/market/sector-performance?minStocks=3
 
 ### 49. Market overview (RIGHT JOIN, scalar subquery)
 GET http://localhost:8080/api/market/overview
+
+### 50. My watchlists (LEFT JOIN + COUNT)
+GET http://localhost:8080/api/watchlists
+
+### 51. Create a new, empty watchlist (copy its watchlistId)
+POST http://localhost:8080/api/watchlists
+Content-Type: application/json
+
+{ "name": "Banks" }
+
+### 52. Watchlists again: "Banks" shows items = 0 (kept by the LEFT JOIN)
+GET http://localhost:8080/api/watchlists
+
+### 53. Add stocks (INSERT ... SELECT). Paste the id from 51
+POST http://localhost:8080/api/watchlists/16760485-ea2a-4b75-87af-6c0a96f5beac/items
+Content-Type: application/json
+
+{ "symbol": "HDFCBANK" }
+
+###
+POST http://localhost:8080/api/watchlists/16760485-ea2a-4b75-87af-6c0a96f5beac/items
+Content-Type: application/json
+
+{ "symbol": "SBIN" }
+
+### 54. Add the same stock again (expect 409 ALREADY_EXISTS: the UNIQUE key)
+POST http://localhost:8080/api/watchlists/16760485-ea2a-4b75-87af-6c0a96f5beac/items
+Content-Type: application/json
+
+{ "symbol": "SBIN" }
+
+### 55. Items with prices and the "owned" badge (LEFT JOIN + EXISTS)
+GET http://localhost:8080/api/watchlists/16760485-ea2a-4b75-87af-6c0a96f5beac/items
+
+### 56. Remove one item (multi-table DELETE)
+DELETE http://localhost:8080/api/watchlists/16760485-ea2a-4b75-87af-6c0a96f5beac/items/SBIN
+
+### 57. My stocks: watched OR owned (FULL OUTER JOIN)
+GET http://localhost:8080/api/my-stocks
+
+### 58. Watched AND owned (INTERSECT)
+GET http://localhost:8080/api/my-stocks/watched-and-owned
+
+### 59. Watched but never bought (EXCEPT)
+GET http://localhost:8080/api/my-stocks/watch-only
+
+### 60. Activity timeline (UNION ALL)
+GET http://localhost:8080/api/my-stocks/activity?limit=10
+
+### 61. Ideas (ANY + NOT EXISTS)
+GET http://localhost:8080/api/my-stocks/ideas
+
+### 62. Suggestions (NOT EXISTS)
+GET http://localhost:8080/api/watchlists/suggestions
+
+### 63. Delete the watchlist: its item goes too (DELETE with CASCADE)
+DELETE http://localhost:8080/api/watchlists/16760485-ea2a-4b75-87af-6c0a96f5beac
