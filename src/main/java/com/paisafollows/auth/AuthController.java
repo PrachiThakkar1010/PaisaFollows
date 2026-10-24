@@ -1,10 +1,16 @@
 package com.paisafollows.auth;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -28,13 +34,19 @@ public class AuthController {
     private final LoginService loginService;
     private final CurrentUser currentUser;
     private final SecurityContextRepository securityContextRepository;
+    private final Set<String> adminEmails;
 
     public AuthController(SignupService signupService, LoginService loginService,
-                          CurrentUser currentUser, SecurityContextRepository securityContextRepository) {
+                          CurrentUser currentUser, SecurityContextRepository securityContextRepository,
+                          @Value("${app.admin-emails:}") String adminEmails) {
         this.signupService = signupService;
         this.loginService = loginService;
         this.currentUser = currentUser;
         this.securityContextRepository = securityContextRepository;
+        this.adminEmails = Arrays.stream(adminEmails.split(","))
+                .map(String::trim).map(String::toLowerCase)
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toSet());
     }
 
     @PostMapping("/auth/register")
@@ -54,9 +66,15 @@ public class AuthController {
             request.changeSessionId();
         }
 
-        // 3. Record "this session is logged in as this user" and save it in the session
-        Authentication auth = UsernamePasswordAuthenticationToken.authenticated(
-                user, null, List.of(new SimpleGrantedAuthority("ROLE_USER")));
+        // 3. Roles: everyone is USER; emails listed in app.admin-emails are also ADMIN
+        List<GrantedAuthority> roles = new ArrayList<>();
+        roles.add(new SimpleGrantedAuthority("ROLE_USER"));
+        if (adminEmails.contains(user.email().toLowerCase())) {
+            roles.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+        }
+
+        // 4. Record "this session is logged in as this user" and save it in the session
+        Authentication auth = UsernamePasswordAuthenticationToken.authenticated(user, null, roles);
         SecurityContext context = SecurityContextHolder.createEmptyContext();
         context.setAuthentication(auth);
         SecurityContextHolder.setContext(context);

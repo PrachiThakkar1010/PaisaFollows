@@ -56,38 +56,54 @@ public class SimulatedProvider {
     /** Runs once, when the app has fully started. */
     @EventListener(ApplicationReadyEvent.class)
     public void start() {
+        if (enabled) {
+            reloadStocks();
+        }
+    }
+
+    /**
+     * (Re)reads the ACTIVE stocks from INSTRUMENT. Stocks already moving keep their price;
+     * new ones start from the saved price, else Yahoo, else ₹1,000.
+     * Called at start-up and after an admin renames, delists or re-activates a stock.
+     */
+    public synchronized void reloadStocks() {
         if (!enabled) {
             return;
         }
         List<Instrument> list = instrumentDao.findActiveStocks();
         Map<UUID, BigDecimal[]> saved = priceDao.findSavedPrices();
-        int fromDb = 0, fromYahoo = 0, fromDefault = 0;
+        int kept = 0, fromDb = 0, fromYahoo = 0, fromDefault = 0;
 
         for (Instrument stock : list) {
-            BigDecimal[] row = saved.get(stock.id());
-            BigDecimal price;
+            BigDecimal price = current.get(stock.id());
             BigDecimal prevClose;
-            if (row != null && row[0] != null) {
-                price = row[0];
-                prevClose = row[1] != null ? row[1] : row[0];
-                fromDb++;
+            if (price != null) {
+                kept++;
+                prevClose = priceCache.previousClose(stock.id(), price);
             } else {
-                price = yahoo.lastPrice(stock.symbol()).orElse(null);
-                if (price != null) {
-                    fromYahoo++;
+                BigDecimal[] row = saved.get(stock.id());
+                if (row != null && row[0] != null) {
+                    price = row[0];
+                    prevClose = row[1] != null ? row[1] : row[0];
+                    fromDb++;
                 } else {
-                    price = DEFAULT_PRICE;
-                    fromDefault++;
+                    price = yahoo.lastPrice(stock.symbol()).orElse(null);
+                    if (price != null) {
+                        fromYahoo++;
+                    } else {
+                        price = DEFAULT_PRICE;
+                        fromDefault++;
+                    }
+                    prevClose = price;
                 }
-                prevClose = price;
+                current.put(stock.id(), price);
             }
-            current.put(stock.id(), price);
             priceCache.setPreviousClose(stock.id(), prevClose);
             priceCache.publish(new Tick(stock.id(), stock.symbol(), price, Instant.now()));
         }
         stocks = list;
-        log.info("Simulator started with {} stocks ({} prices from database, {} from Yahoo, {} default)",
-                list.size(), fromDb, fromYahoo, fromDefault);
+        log.info("Simulator has {} stocks ({} kept, {} prices from database, {} from Yahoo, {} default)",
+                list.size(), kept, fromDb, fromYahoo, fromDefault);
     }
 
     /** Every second: move every price a little and publish it. */
@@ -95,6 +111,9 @@ public class SimulatedProvider {
     public void tick() {
         for (Instrument stock : stocks) {
             BigDecimal old = current.get(stock.id());
+            if (old == null) {
+                continue;
+            }
             double move = random.nextGaussian() * 0.001;   // usually within about ±0.1%
             BigDecimal next = roundToTick(old.multiply(BigDecimal.valueOf(1 + move)));
             if (next.compareTo(TICK_SIZE) < 0) {

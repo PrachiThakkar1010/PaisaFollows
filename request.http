@@ -329,3 +329,60 @@ Content-Type: application/json
 
 ### 71. Delete it
 DELETE http://localhost:8080/api/alerts/837fd3b9-c170-4ca5-9d50-05efcac923f7
+
+### 72. Leaderboard (any logged-in user)
+GET http://localhost:8080/api/leaderboard?limit=5
+
+### 73. Admin URL as a NON-admin (log in as demo2 first): expect 403 FORBIDDEN
+POST http://localhost:8080/api/admin/price-history/reset
+
+### 74. Log in as the admin (demo1)
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{ "email": "demo1@paisafollows.test", "password": "password123" }
+
+### 75. Create an alert on TRENT, so the rename has something to cascade into
+POST http://localhost:8080/api/alerts
+Content-Type: application/json
+
+{ "symbol": "TRENT", "direction": "BELOW", "targetPrice": 1 }
+
+### 76. Symbol change (UPDATE with CASCADE): expect alertsFollowed >= 1
+POST http://localhost:8080/api/admin/instruments/TRENT/rename
+Content-Type: application/json
+
+{ "newSymbol": "TRENTLTD" }
+
+### 77. The alert now shows TRENTLTD without any code touching it
+GET http://localhost:8080/api/alerts
+
+### 78. Rename it back
+POST http://localhost:8080/api/admin/instruments/TRENTLTD/rename
+Content-Type: application/json
+
+{ "newSymbol": "TRENT" }
+
+### 79. Delist (DELETE without cascade): expect deleted=false, status INACTIVE
+DELETE http://localhost:8080/api/admin/instruments/TRENT
+
+### 80. Try to buy it: expect "TRENT is not tradable"
+POST http://localhost:8080/api/orders
+Content-Type: application/json
+
+{ "symbol": "TRENT", "side": "BUY", "type": "MARKET", "quantity": 1 }
+
+### 81. Re-activate it
+POST http://localhost:8080/api/admin/instruments/TRENT/activate
+
+### 82. Archive price history (CREATE LIKE + ALTER + RENAME)
+POST http://localhost:8080/api/admin/price-history/archive
+
+### 83. List archives
+GET http://localhost:8080/api/admin/price-history/archives
+
+### 84. Delete that archive (DROP TABLE). Paste the table name from 82
+DELETE http://localhost:8080/api/admin/price-history/archives/PASTE-TABLE-NAME
+
+### 85. Reset history (TRUNCATE)
+POST http://localhost:8080/api/admin/price-history/reset
