@@ -70,3 +70,9 @@ POST http://localhost:8080/api/auth/logout
 
 ### 10. Me after logout (should give 401 again)
 GET http://localhost:8080/api/me
+
+### 11. All quotes (log in first)
+GET http://localhost:8080/api/quotes
+
+### 12. One quote
+GET http://localhost:8080/api/quotes/RELIANCE

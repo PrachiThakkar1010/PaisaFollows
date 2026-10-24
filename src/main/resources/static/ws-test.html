@@ -1,0 +1,59 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>PaisaFollows · live ticks</title>
+  <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 24px; }
+    table { border-collapse: collapse; min-width: 480px; }
+    th, td { padding: 6px 12px; border-bottom: 1px solid #ddd; text-align: right; }
+    th:first-child, td:first-child { text-align: left; }
+    .up { color: #0a7d32; } .down { color: #c62828; }
+  </style>
+</head>
+<body>
+  <h1>Live ticks</h1>
+  <p id="status">Connecting…</p>
+  <table>
+    <thead><tr><th>Symbol</th><th>Price (₹)</th><th>Change</th><th>%</th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table>
+
+  <script>
+    const statusEl = document.getElementById('status');
+    const tbody = document.getElementById('rows');
+    const rows = {};
+
+    const client = new StompJs.Client({
+      brokerURL: (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws',
+      reconnectDelay: 3000
+    });
+
+    client.onConnect = () => {
+      statusEl.textContent = 'Connected. Waiting for prices…';
+      client.subscribe('/topic/ticks', message => show(JSON.parse(message.body)));
+    };
+    client.onWebSocketClose = () => { statusEl.textContent = 'Disconnected, retrying…'; };
+    client.activate();
+
+    function show(q) {
+      let tr = rows[q.symbol];
+      if (!tr) {
+        tr = document.createElement('tr');
+        tr.innerHTML = '<td></td><td></td><td></td><td></td>';
+        const after = Object.keys(rows).sort().find(s => s > q.symbol);
+        tbody.insertBefore(tr, after ? rows[after] : null);
+        rows[q.symbol] = tr;
+      }
+      const cls = q.change > 0 ? 'up' : q.change < 0 ? 'down' : '';
+      tr.cells[0].textContent = q.symbol;
+      tr.cells[1].textContent = Number(q.price).toFixed(2);
+      tr.cells[2].textContent = Number(q.change).toFixed(2);
+      tr.cells[3].textContent = Number(q.changePct).toFixed(2) + '%';
+      tr.cells[2].className = tr.cells[3].className = cls;
+      statusEl.textContent = 'Live · ' + Object.keys(rows).length + ' stocks · last update ' + new Date(q.timestamp).toLocaleTimeString();
+    }
+  </script>
+</body>
+</html>
