@@ -290,3 +290,42 @@ GET http://localhost:8080/api/watchlists/suggestions
 
 ### 63. Delete the watchlist: its item goes too (DELETE with CASCADE)
 DELETE http://localhost:8080/api/watchlists/16760485-ea2a-4b75-87af-6c0a96f5beac
+
+### 64. Alert ABOVE, just over the price (P + 0.1%): fires within seconds as the price wanders
+POST http://localhost:8080/api/alerts
+Content-Type: application/json
+
+{ "symbol": "RELIANCE", "direction": "ABOVE", "targetPrice": 1196 }
+
+### 65. Alert BELOW, far under the price (P - 20%): stays ACTIVE
+POST http://localhost:8080/api/alerts
+Content-Type: application/json
+
+{ "symbol": "RELIANCE", "direction": "BELOW", "targetPrice": 950 }
+
+### 66. Same alert again (expect 409: UNIQUE constraint)
+POST http://localhost:8080/api/alerts
+Content-Type: application/json
+
+{ "symbol": "RELIANCE", "direction": "BELOW", "targetPrice": 950 }
+
+### 67. Unknown stock (expect 404: the INSERT ... SELECT found no such ACTIVE symbol)
+POST http://localhost:8080/api/alerts
+Content-Type: application/json
+
+{ "symbol": "NOTASTOCK", "direction": "ABOVE", "targetPrice": 100 }
+
+### 68. My alerts (send again after ~10 s: alert 64 becomes TRIGGERED, set by the trigger)
+GET http://localhost:8080/api/alerts
+
+### 69. Only triggered ones
+GET http://localhost:8080/api/alerts?status=TRIGGERED
+
+### 70. Change the BELOW alert's target (UPDATE without cascade). Paste its alertId
+PUT http://localhost:8080/api/alerts/837fd3b9-c170-4ca5-9d50-05efcac923f7
+Content-Type: application/json
+
+{ "targetPrice": 900 }
+
+### 71. Delete it
+DELETE http://localhost:8080/api/alerts/837fd3b9-c170-4ca5-9d50-05efcac923f7
