@@ -46,3 +46,27 @@ Content-Type: application/json
   "dateOfBirth": "2012-01-01",
   "pan": "YOUNG1234Y"
 }
+
+### 5. Me without login (should give 401)
+GET http://localhost:8080/api/me
+
+### 6. Wrong password (should give 401 "Invalid email or password")
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{ "email": "test1@example.com", "password": "wrongpassword" }
+
+### 7. Login (should give 200 with balance)
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{ "email": "test1@example.com", "password": "password123" }
+
+### 8. Me after login (should give 200, same balance)
+GET http://localhost:8080/api/me
+
+### 9. Logout (should give 204)
+POST http://localhost:8080/api/auth/logout
+
+### 10. Me after logout (should give 401 again)
+GET http://localhost:8080/api/me
