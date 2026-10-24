@@ -171,20 +171,26 @@ Content-Type: application/json
 ### 31. History: see FILLED, CANCELLED, REJECTED together
 GET http://localhost:8080/api/orders?page=0&size=10
 
-### A. Price now (note it as P)
-GET http://localhost:8080/api/quotes/RELIANCE
+### 32. Login
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
 
-### B. Stop-loss ABOVE the price: expect 422 "must be below the current price"
+{ "email": "demo1@paisafollows.test", "password": "password123" }
+
+### 33. Portfolio (view + function + aggregates)
+GET http://localhost:8080/api/portfolio
+
+### 34. Statement, last 30 days (stored procedure)
+GET http://localhost:8080/api/statement
+
+### 35. Statement for a date range
+GET http://localhost:8080/api/statement?from=2026-10-01&to=2026-10-31
+
+### 36. Buy 1 INFY, so the wallet changes and the trigger fires
 POST http://localhost:8080/api/orders
 Content-Type: application/json
 
-{ "symbol": "RELIANCE", "side": "SELL", "type": "STOP_LOSS", "quantity": 1, "triggerPrice": 99999 }
+{ "symbol": "INFY", "side": "BUY", "type": "MARKET", "quantity": 1 }
 
-### C. Stop-loss well BELOW the price: expect 201, status OPEN
-POST http://localhost:8080/api/orders
-Content-Type: application/json
-
-{ "symbol": "RELIANCE", "side": "SELL", "type": "STOP_LOSS", "quantity": 1, "triggerPrice": 1 }
-
-### D. Newest order's createdAt should match your clock (IST)
-GET http://localhost:8080/api/orders?page=0&size=1
+### 37. Balance history (written by the trigger)
+GET http://localhost:8080/api/wallet/history?limit=5
