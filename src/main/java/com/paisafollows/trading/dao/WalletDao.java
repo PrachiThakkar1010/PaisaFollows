@@ -13,16 +13,21 @@ import com.paisafollows.trading.Wallet;
 @Repository
 public class WalletDao {
 
-    private static final String LOCK_WALLET =
-            "SELECT wallet_id, account_id, available_balance, reserved_balance "
-          + "FROM WALLET WHERE wallet_id = ? FOR UPDATE";
+    private static final String SELECT_WALLET =
+            "SELECT wallet_id, account_id, available_balance, reserved_balance FROM WALLET ";
+
+    private static final String LOCK_WALLET = SELECT_WALLET + "WHERE wallet_id = ? FOR UPDATE";
+
+    /** Used by background jobs, which know the account of an order but not its wallet */
+    private static final String LOCK_WALLET_BY_ACCOUNT =
+            SELECT_WALLET + "WHERE account_id = ? AND currency = 'INR' FOR UPDATE";
 
     /** available -> reserved, only if enough is available */
     private static final String RESERVE =
             "UPDATE WALLET SET available_balance = available_balance - ?, reserved_balance = reserved_balance + ? "
           + "WHERE wallet_id = ? AND available_balance >= ?";
 
-    /** reserved -> available (order cancelled, expired, or leftover after a fill) */
+    /** reserved -> available (order cancelled or expired) */
     private static final String RELEASE =
             "UPDATE WALLET SET available_balance = available_balance + ?, reserved_balance = reserved_balance - ? "
           + "WHERE wallet_id = ? AND reserved_balance >= ?";
@@ -37,7 +42,7 @@ public class WalletDao {
             "UPDATE WALLET SET available_balance = available_balance - ? "
           + "WHERE wallet_id = ? AND available_balance >= ?";
 
-    /** Money comes in (a sell is filled) */
+    /** Money comes in (a sell is filled, or unused reserve is returned) */
     private static final String CREDIT =
             "UPDATE WALLET SET available_balance = available_balance + ? WHERE wallet_id = ?";
 
@@ -49,11 +54,11 @@ public class WalletDao {
 
     /** Reads the wallet and locks it until the transaction ends. Always lock the wallet FIRST. */
     public Wallet lock(UUID walletId) {
-        return jdbc.queryForObject(LOCK_WALLET, (rs, n) -> new Wallet(
-                UuidUtil.fromBytes(rs.getBytes("wallet_id")),
-                UuidUtil.fromBytes(rs.getBytes("account_id")),
-                rs.getBigDecimal("available_balance"),
-                rs.getBigDecimal("reserved_balance")), UuidUtil.toBytes(walletId));
+        return jdbc.queryForObject(LOCK_WALLET, this::map, UuidUtil.toBytes(walletId));
+    }
+
+    public Wallet lockByAccount(UUID accountId) {
+        return jdbc.queryForObject(LOCK_WALLET_BY_ACCOUNT, this::map, UuidUtil.toBytes(accountId));
     }
 
     /** @return false if there was not enough available balance (nothing changed) */
@@ -76,5 +81,13 @@ public class WalletDao {
 
     public void credit(UUID walletId, BigDecimal amount) {
         jdbc.update(CREDIT, amount, UuidUtil.toBytes(walletId));
+    }
+
+    private Wallet map(java.sql.ResultSet rs, int rowNum) throws java.sql.SQLException {
+        return new Wallet(
+                UuidUtil.fromBytes(rs.getBytes("wallet_id")),
+                UuidUtil.fromBytes(rs.getBytes("account_id")),
+                rs.getBigDecimal("available_balance"),
+                rs.getBigDecimal("reserved_balance"));
     }
 }

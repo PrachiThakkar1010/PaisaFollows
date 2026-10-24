@@ -121,3 +121,70 @@ GET http://localhost:8080/api/orders?status=REJECTED
 
 ### 21. Balance after trading
 GET http://localhost:8080/api/me
+
+### 22. Login
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{ "email": "demo1@paisafollows.test", "password": "password123" }
+
+### 23. Current price of RELIANCE (note it as P)
+GET http://localhost:8080/api/quotes/RELIANCE
+
+### 24. LIMIT BUY far below P (stays OPEN, money reserved). Use about P minus 10%
+POST http://localhost:8080/api/orders
+Content-Type: application/json
+
+{ "symbol": "RELIANCE", "side": "BUY", "type": "LIMIT", "quantity": 2, "price": 1200 }
+
+### 25. Balance: reservedBalance went up
+GET http://localhost:8080/api/me
+
+### 26. Open orders
+GET http://localhost:8080/api/orders?status=OPEN
+
+### 27. Cancel it (paste the orderId from test 24)
+DELETE http://localhost:8080/api/orders/PASTE-ORDER-ID-HERE
+
+### 28. LIMIT BUY above P (fills on the next tick at the tick price, leftover returned). Use about P plus 5%
+POST http://localhost:8080/api/orders
+Content-Type: application/json
+
+{ "symbol": "RELIANCE", "side": "BUY", "type": "LIMIT", "quantity": 1, "price": 1500 }
+
+### 29. STOP_LOSS SELL with trigger just below P (fills within a minute or two as the price wanders). Use about P minus 0.2%
+POST http://localhost:8080/api/orders
+Content-Type: application/json
+
+{ "symbol": "RELIANCE", "side": "SELL", "type": "STOP_LOSS", "quantity": 1, "triggerPrice": 1410 }
+
+### 30. Basket: leg 2 is far too expensive, so ONLY leg 2 rolls back
+POST http://localhost:8080/api/orders/basket
+Content-Type: application/json
+
+{ "legs": [
+    { "symbol": "INFY",   "side": "BUY", "quantity": 1 },
+    { "symbol": "MARUTI", "side": "BUY", "quantity": 100000 },
+    { "symbol": "TCS",    "side": "BUY", "quantity": 1 }
+] }
+
+### 31. History: see FILLED, CANCELLED, REJECTED together
+GET http://localhost:8080/api/orders?page=0&size=10
+
+### A. Price now (note it as P)
+GET http://localhost:8080/api/quotes/RELIANCE
+
+### B. Stop-loss ABOVE the price: expect 422 "must be below the current price"
+POST http://localhost:8080/api/orders
+Content-Type: application/json
+
+{ "symbol": "RELIANCE", "side": "SELL", "type": "STOP_LOSS", "quantity": 1, "triggerPrice": 99999 }
+
+### C. Stop-loss well BELOW the price: expect 201, status OPEN
+POST http://localhost:8080/api/orders
+Content-Type: application/json
+
+{ "symbol": "RELIANCE", "side": "SELL", "type": "STOP_LOSS", "quantity": 1, "triggerPrice": 1 }
+
+### D. Newest order's createdAt should match your clock (IST)
+GET http://localhost:8080/api/orders?page=0&size=1

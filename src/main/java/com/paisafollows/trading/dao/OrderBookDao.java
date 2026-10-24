@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import com.paisafollows.common.UuidUtil;
 import com.paisafollows.trading.BookEntry;
+import com.paisafollows.trading.OrderType;
 import com.paisafollows.trading.Side;
 
 /** ORDER_BOOK = orders waiting for the price to reach them (limit and stop-loss). */
@@ -22,8 +23,12 @@ public class OrderBookDao {
     private static final String DELETE_BY_ORDER =
             "DELETE FROM ORDER_BOOK WHERE order_id = ?";
 
-    private static final String FIND_ALL =
-            "SELECT order_id, instrument_id, side, quantity, price FROM ORDER_BOOK";
+    /** Every waiting order, with its type from the orders table (needed to know limit vs stop-loss). */
+    private static final String FIND_ALL_OPEN =
+            "SELECT b.order_id, b.instrument_id, o.order_type, b.side, b.quantity, b.price "
+          + "FROM ORDER_BOOK b "
+          + "JOIN orders o ON o.order_id = b.order_id "
+          + "WHERE o.status = 'OPEN'";
 
     private final JdbcTemplate jdbc;
 
@@ -40,11 +45,11 @@ public class OrderBookDao {
         jdbc.update(DELETE_BY_ORDER, UuidUtil.toBytes(orderId));
     }
 
-    /** Everything waiting, used to rebuild the in-memory book after a restart (Module 9). */
     public List<BookEntry> findAll() {
-        return jdbc.query(FIND_ALL, (rs, n) -> new BookEntry(
+        return jdbc.query(FIND_ALL_OPEN, (rs, n) -> new BookEntry(
                 UuidUtil.fromBytes(rs.getBytes("order_id")),
                 UuidUtil.fromBytes(rs.getBytes("instrument_id")),
+                OrderType.valueOf(rs.getString("order_type")),
                 Side.valueOf(rs.getString("side")),
                 rs.getInt("quantity"),
                 rs.getBigDecimal("price")));

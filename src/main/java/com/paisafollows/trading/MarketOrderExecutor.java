@@ -2,7 +2,6 @@ package com.paisafollows.trading;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -18,10 +17,7 @@ import com.paisafollows.trading.dao.TradeDao;
 import com.paisafollows.trading.dao.WalletDao;
 import com.paisafollows.trading.dao.WalletTxnDao;
 
-/**
- * Executes one market order as ONE database transaction.
- * Any exception inside execute() rolls back every change made here.
- */
+/** Executes market orders. */
 @Service
 public class MarketOrderExecutor {
 
@@ -33,27 +29,32 @@ public class MarketOrderExecutor {
     private final OrderDao orderDao;
     private final HoldingDao holdingDao;
     private final TradeDao tradeDao;
+    private final PositionUpdater positions;
 
     public MarketOrderExecutor(WalletDao walletDao, WalletTxnDao walletTxnDao, OrderDao orderDao,
-                               HoldingDao holdingDao, TradeDao tradeDao) {
+                               HoldingDao holdingDao, TradeDao tradeDao, PositionUpdater positions) {
         this.walletDao = walletDao;
         this.walletTxnDao = walletTxnDao;
         this.orderDao = orderDao;
         this.holdingDao = holdingDao;
         this.tradeDao = tradeDao;
+        this.positions = positions;
     }
 
+    /** One market order = one transaction (START ... COMMIT, or ROLLBACK on any exception). */
     @Transactional
     public OrderResponse execute(AppUser user, InstrumentRef stock, Side side, int quantity, BigDecimal marketPrice) {
+        return executeWithinTransaction(user, stock, side, quantity, marketPrice);
+    }
+
+    /** Same work, but joins the caller's transaction (the basket order uses this with SAVEPOINTs). */
+    public OrderResponse executeWithinTransaction(AppUser user, InstrumentRef stock, Side side,
+                                                  int quantity, BigDecimal marketPrice) {
         // 1. Lock the wallet FIRST (fixed lock order: wallet -> holding)
         Wallet wallet = walletDao.lock(user.walletId());
 
-        // 2. For a sell, check free shares BEFORE this order exists,
-        //    so the "shares in open sell orders" count does not include itself
-        Holding holding = null;
-        if (side == Side.SELL) {
-            holding = lockSellableHolding(user, stock, quantity);
-        }
+        // 2. For a sell, check free shares BEFORE this order exists
+        Holding holding = side == Side.SELL ? lockSellableHolding(user, stock, quantity) : null;
 
         // 3. The order starts its life as OPEN
         UUID orderId = UuidUtil.newId();
@@ -66,7 +67,7 @@ public class MarketOrderExecutor {
     }
 
     /** Locks the holding and checks enough shares are free (owned minus those promised to OTHER open sell orders). */
-    private Holding lockSellableHolding(AppUser user, InstrumentRef stock, int quantity) {
+    public Holding lockSellableHolding(AppUser user, InstrumentRef stock, int quantity) {
         Holding h = holdingDao.lock(user.portfolioId(), stock.id())
                 .orElseThrow(() -> new ApiException(ErrorCode.INSUFFICIENT_QTY,
                         "You do not own any " + stock.symbol()));
@@ -88,26 +89,12 @@ public class MarketOrderExecutor {
         BigDecimal fillPrice = marketPrice.multiply(BigDecimal.ONE.add(SLIPPAGE)).setScale(2, RoundingMode.HALF_UP);
         BigDecimal cost = fillPrice.multiply(BigDecimal.valueOf(quantity)).setScale(2, RoundingMode.HALF_UP);
 
-        // Pay (guarded: refuses if not enough money -> exception -> ROLLBACK)
         if (!walletDao.debitAvailable(wallet.walletId(), cost)) {
             throw new ApiException(ErrorCode.INSUFFICIENT_FUNDS,
                     "Need ₹" + cost + " but only ₹" + wallet.available() + " is available");
         }
 
-        // Add the shares: new holding, or a new weighted average price for an existing one
-        Optional<Holding> existing = holdingDao.lock(user.portfolioId(), stock.id());
-        if (existing.isPresent()) {
-            Holding h = existing.get();
-            int newQuantity = h.quantity() + quantity;
-            BigDecimal newAverage = h.averageBuyPrice().multiply(BigDecimal.valueOf(h.quantity()))
-                    .add(fillPrice.multiply(BigDecimal.valueOf(quantity)))
-                    .divide(BigDecimal.valueOf(newQuantity), 2, RoundingMode.HALF_UP);
-            holdingDao.update(h.holdingId(), newQuantity, newAverage);
-        } else {
-            holdingDao.insert(user.portfolioId(), stock.id(), quantity, fillPrice);
-        }
-
-        // Trade record, order OPEN -> FILLED, money diary
+        positions.addShares(user.portfolioId(), stock.id(), quantity, fillPrice);
         tradeDao.recordBuy(orderId, stock.id(), quantity, fillPrice);
         markFilled(orderId, fillPrice);
         walletTxnDao.record(wallet.walletId(), "TRADE_DEBIT", cost, orderId,
@@ -121,17 +108,8 @@ public class MarketOrderExecutor {
                                int quantity, BigDecimal marketPrice) {
         BigDecimal fillPrice = marketPrice.multiply(BigDecimal.ONE.subtract(SLIPPAGE)).setScale(2, RoundingMode.HALF_UP);
         BigDecimal proceeds = fillPrice.multiply(BigDecimal.valueOf(quantity)).setScale(2, RoundingMode.HALF_UP);
-        BigDecimal realisedPnl = fillPrice.subtract(h.averageBuyPrice())
-                .multiply(BigDecimal.valueOf(quantity)).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal realisedPnl = positions.removeShares(h, quantity, fillPrice);
 
-        // Remove the shares (whole holding, or part of it; the average price stays the same)
-        if (quantity == h.quantity()) {
-            holdingDao.delete(h.holdingId());
-        } else {
-            holdingDao.update(h.holdingId(), h.quantity() - quantity, h.averageBuyPrice());
-        }
-
-        // Trade record with profit/loss, order OPEN -> FILLED, money in, money diary
         tradeDao.recordSell(orderId, stock.id(), quantity, fillPrice, realisedPnl);
         markFilled(orderId, fillPrice);
         walletDao.credit(user.walletId(), proceeds);
