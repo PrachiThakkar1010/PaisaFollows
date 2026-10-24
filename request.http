@@ -76,3 +76,48 @@ GET http://localhost:8080/api/quotes
 
 ### 12. One quote
 GET http://localhost:8080/api/quotes/RELIANCE
+
+### 13. Login as a demo user (owns shares already)
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{ "email": "demo1@paisafollows.test", "password": "password123" }
+
+### 14. Market BUY 2 RELIANCE (expect 201, status FILLED)
+POST http://localhost:8080/api/orders
+Content-Type: application/json
+
+{ "symbol": "RELIANCE", "side": "BUY", "type": "MARKET", "quantity": 2 }
+
+### 15. Market SELL 1 RELIANCE (expect 201, FILLED, with realisedPnl)
+POST http://localhost:8080/api/orders
+Content-Type: application/json
+
+{ "symbol": "RELIANCE", "side": "SELL", "type": "MARKET", "quantity": 1 }
+
+### 16. Sell more than owned (expect 422 INSUFFICIENT_QTY)
+POST http://localhost:8080/api/orders
+Content-Type: application/json
+
+{ "symbol": "RELIANCE", "side": "SELL", "type": "MARKET", "quantity": 5000 }
+
+### 17. Buy far too much (expect 422 INSUFFICIENT_FUNDS, and a ROLLBACK in the log)
+POST http://localhost:8080/api/orders
+Content-Type: application/json
+
+{ "symbol": "MARUTI", "side": "BUY", "type": "MARKET", "quantity": 100000 }
+
+### 18. Unknown stock (expect 404)
+POST http://localhost:8080/api/orders
+Content-Type: application/json
+
+{ "symbol": "NOTASTOCK", "side": "BUY", "type": "MARKET", "quantity": 1 }
+
+### 19. Order history, page 1 (5 per page)
+GET http://localhost:8080/api/orders?page=0&size=5
+
+### 20. Only rejected orders
+GET http://localhost:8080/api/orders?status=REJECTED
+
+### 21. Balance after trading
+GET http://localhost:8080/api/me
