@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,10 +31,11 @@ public class LimitOrderFiller {
     private final HoldingDao holdingDao;
     private final TradeDao tradeDao;
     private final PositionUpdater positions;
+    private final ApplicationEventPublisher events;
 
     public LimitOrderFiller(OrderDao orderDao, OrderBookDao orderBookDao, WalletDao walletDao,
                             WalletTxnDao walletTxnDao, HoldingDao holdingDao, TradeDao tradeDao,
-                            PositionUpdater positions) {
+                            PositionUpdater positions, ApplicationEventPublisher events) {
         this.orderDao = orderDao;
         this.orderBookDao = orderBookDao;
         this.walletDao = walletDao;
@@ -41,6 +43,7 @@ public class LimitOrderFiller {
         this.holdingDao = holdingDao;
         this.tradeDao = tradeDao;
         this.positions = positions;
+        this.events = events;
     }
 
     @Transactional
@@ -89,6 +92,10 @@ public class LimitOrderFiller {
         walletTxnDao.record(wallet.walletId(), "ORDER_RELEASE", leftover, o.orderId(),
                 "Unused reserve returned");
         log.info("Filled {} BUY {} x{} @ {}", o.orderType(), o.orderId(), o.quantity(), fillPrice);
+
+        events.publishEvent(new OrderEvent(o.orderId(), Side.BUY, o.orderType(), o.quantity(),
+                OrderStatus.FILLED, fillPrice,
+                "Limit buy filled: " + o.quantity() + " @ ₹" + fillPrice + " (₹" + cost + ")"));
     }
 
     private void fillSell(Order o, Wallet wallet, BigDecimal tickPrice) {
@@ -97,6 +104,8 @@ public class LimitOrderFiller {
             // Shares are gone (should not happen: they were promised). Close the order safely.
             orderDao.markClosed(o.orderId(), OrderStatus.CANCELLED);
             log.warn("Cancelled sell {}: not enough shares left", o.orderId());
+            events.publishEvent(new OrderEvent(o.orderId(), Side.SELL, o.orderType(), o.quantity(),
+                    OrderStatus.CANCELLED, null, "Sell cancelled: not enough shares left"));
             return;
         }
 
@@ -111,5 +120,10 @@ public class LimitOrderFiller {
         walletTxnDao.record(wallet.walletId(), "TRADE_CREDIT", proceeds, o.orderId(),
                 o.orderType() + " sell filled: " + o.quantity() + " @ ₹" + fillPrice);
         log.info("Filled {} SELL {} x{} @ {}", o.orderType(), o.orderId(), o.quantity(), fillPrice);
+
+        String what = o.orderType() == OrderType.STOP_LOSS ? "Stop-loss triggered" : "Limit sell filled";
+        events.publishEvent(new OrderEvent(o.orderId(), Side.SELL, o.orderType(), o.quantity(),
+                OrderStatus.FILLED, fillPrice,
+                what + ": " + o.quantity() + " @ ₹" + fillPrice + " (P&L ₹" + realisedPnl + ")"));
     }
 }

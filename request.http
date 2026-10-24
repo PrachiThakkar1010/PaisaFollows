@@ -386,3 +386,18 @@ DELETE http://localhost:8080/api/admin/price-history/archives/PASTE-TABLE-NAME
 
 ### 85. Reset history (TRUNCATE)
 POST http://localhost:8080/api/admin/price-history/reset
+
+### 86. 1-minute candles for the last 2 hours
+GET http://localhost:8080/api/candles/RELIANCE?interval=1m
+
+### 87. 5-minute candles for the last 1 hour
+GET http://localhost:8080/api/candles/RELIANCE?interval=5m&hours=1
+
+### 88. Bad interval: expect 400 INVALID_INPUT
+GET http://localhost:8080/api/candles/RELIANCE?interval=2m
+
+### 89. Unknown stock: expect 404
+GET http://localhost:8080/api/candles/NOSUCHSTOCK
+
+### 
+DELETE http://localhost:8080/api/orders/24c7939e-da2e-43fb-add8-865dc59e3189

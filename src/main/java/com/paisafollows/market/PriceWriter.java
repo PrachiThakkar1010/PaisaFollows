@@ -27,12 +27,12 @@ public class PriceWriter {
         }
     }
 
-    /** Every 60 s: one snapshot per stock -> MARKET_PRICE_HISTORY */
-    @Scheduled(fixedRate = 60000, initialDelay = 60000)
+    /** Every market.history-interval-ms (default 10 s): one snapshot per stock -> MARKET_PRICE_HISTORY */
+    @Scheduled(fixedRateString = "${market.history-interval-ms:10000}", initialDelay = 15000)
     public void saveHistory() {
         if (!cache.all().isEmpty()) {
             dao.insertHistory(cache.all());
-            log.info("Saved price snapshot for {} stocks", cache.all().size());
+            log.debug("Saved price snapshot for {} stocks", cache.all().size());
         }
     }
 }
