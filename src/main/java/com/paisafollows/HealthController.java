@@ -22,4 +22,5 @@ public class HealthController {
                 Integer.class);
         return Map.of("status", "UP", "tables", tables);
     }
+
 }
