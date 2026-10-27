@@ -1,0 +1,25 @@
+/* =========================================================
+   Quick trade: the small Buy / Sell buttons next to a stock name,
+   and the pop-up window they open. Loaded by js/quick-trade.js.
+   Uses the same colour variables as style.css, so it follows light/dark mode.
+   ========================================================= */
+
+/* the Buy / Sell buttons */
+.trade-btns { display: inline-flex; gap: 4px; margin-left: 8px; vertical-align: middle; }
+.trade-btn { height: 24px; padding: 0 9px; white-space: nowrap; border-radius: 5px; border: 1px solid transparent; font-size: 11px; font-weight: 700; line-height: 1; color: #fff; }
+.trade-btn.b { background: var(--buy-bg); }
+.trade-btn.s { background: var(--sell-bg); }
+.trade-btn:hover { filter: brightness(1.1); }
+.name-cell { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.name-cell .who { min-width: 0; }
+
+/* the pop-up */
+.qt-backdrop { position: fixed; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgb(15 23 42 / 0.45); }
+.qt-box { width: 100%; max-width: 380px; background: var(--card); color: var(--text); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-lg); }
+.qt-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--border-soft); }
+.qt-head h2 { font-size: 16px; font-weight: 600; color: var(--text-strong); }
+.qt-close { width: 30px; height: 30px; border: 0; border-radius: 6px; background: none; color: var(--text-2); font-size: 18px; line-height: 1; }
+.qt-close:hover { background: var(--surface-2); }
+.qt-body { padding: 16px 20px 20px; }
+.qt-body > * + * { margin-top: 14px; }
+.qt-foot { text-align: center; font-size: 12px; }

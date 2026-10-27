@@ -1,6 +1,7 @@
 // Markets: screener, "what can I afford?", sector ranking
 import { api } from '../api.js';
 import { initLayout } from '../layout.js';
+import { tradeButtons } from '../quick-trade.js';
 import { $, change, empty, errorBox, esc, inr, int, liveChange, livePrice, pager, spinner, stockLink, stockUrl, table, tabs } from '../util.js';
 
 await initLayout('markets');
@@ -56,7 +57,7 @@ async function loadScreener() {
     $('#screener-table').innerHTML = !res.items.length ? empty('No stocks match these filters.') :
       table(['Stock', 'Sector', 'LTP ₹', 'Prev. close', 'Change'], res.items.map((r) => `
         <tr class="clickable" data-href="${stockUrl(r.symbol)}">
-          <td><span class="strong">${esc(r.symbol)}</span><span class="sub">${esc(r.name)}</span></td>
+          <td><div class="name-cell"><div class="who"><span class="strong">${esc(r.symbol)}</span><span class="sub">${esc(r.name)}</span></div>${tradeButtons(r.symbol)}</div></td>
           <td class="small muted">${esc(r.sector)}</td>
           <td>${livePrice(r.symbol, r.ltp)}</td>
           <td>${inr(r.previousClose)}</td>
@@ -68,7 +69,7 @@ async function loadScreener() {
   }
 }
 
-// a click anywhere on a row opens that stock
+// a click anywhere on a row opens that stock (the B / S buttons open the quick-trade pop-up instead)
 $('#screener-table').addEventListener('click', (e) => {
   const tr = e.target.closest('tr[data-href]');
   if (tr) window.location.href = tr.dataset.href;
@@ -84,7 +85,7 @@ async function loadAffordable() {
   try {
     const rows = await api.affordable(50);
     $('#affordable-table').innerHTML = table(['Stock', 'LTP ₹', 'Max shares'], rows.map((r) => `<tr>
-      <td>${stockLink(r.symbol)} <span class="small muted">${esc(r.name)}</span></td>
+      <td>${stockLink(r.symbol)} <span class="small muted">${esc(r.name)}</span>${tradeButtons(r.symbol)}</td>
       <td>${livePrice(r.symbol, r.ltp)}</td>
       <td class="strong ${r.maxQuantity === 0 ? 'faint' : ''}">${int(r.maxQuantity)}</td></tr>`).join(''));
   } catch (e) { $('#affordable-table').innerHTML = errorBox(e.message); }
