@@ -1,6 +1,6 @@
 // =========================================================
 // The part every logged-in page shares: login check, header,
-// menu, search box, balance, scrolling ticker and live prices.
+// menu, light/dark switch, search box, balance, scrolling ticker and live prices.
 // Each page calls:   const me = await initLayout('dashboard');
 // =========================================================
 import { api } from './api.js';
@@ -21,6 +21,12 @@ const NAV = [
 export const session = { me: null, isAdmin: false };
 
 export async function initLayout(active) {
+  // 0. Light/dark support. Normally theme.js is already loaded by the page's <head>;
+  //    if a page forgot that line, load it now so the switch is still shown.
+  if (!window.pfTheme) {
+    await import('./theme.js');
+  }
+
   // 1. Logged in? (a 401 sends the browser to the login page)
   session.me = await api.me();
 
@@ -56,6 +62,7 @@ export async function initLayout(active) {
           <button id="logout" class="down" type="button">Log out</button>
         </div>
       </div>
+      ${window.pfTheme.buttonHtml()}
     </div>
     <div class="ticker"><div class="ticker-track" id="ticker"></div></div>`;
   document.body.prepend(header);

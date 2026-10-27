@@ -10,15 +10,26 @@ const IST = 19800; // the library shows UTC, so add 5 h 30 min to display Indian
 
 export function candleChart(el, tabsEl, noteEl, symbol) {
   const { createChart, CandlestickSeries, ColorType } = window.LightweightCharts;
-  const chart = createChart(el, {
-    autoSize: true,
-    layout: { background: { type: ColorType.Solid, color: '#ffffff' }, textColor: '#475569', fontSize: 11 },
-    grid: { vertLines: { color: '#f1f5f9' }, horzLines: { color: '#f1f5f9' } },
-    rightPriceScale: { borderColor: '#e2e8f0' },
-    timeScale: { borderColor: '#e2e8f0', timeVisible: true, secondsVisible: false },
+
+  // Chart colours come from the same CSS variables as the rest of the page (light or dark theme)
+  const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  const colours = () => ({
+    layout: { background: { type: ColorType.Solid, color: css('--card') }, textColor: css('--text-2'), fontSize: 11 },
+    grid: { vertLines: { color: css('--border-soft') }, horzLines: { color: css('--border-soft') } },
+    rightPriceScale: { borderColor: css('--border') },
+    timeScale: { borderColor: css('--border'), timeVisible: true, secondsVisible: false },
   });
-  const series = chart.addSeries(CandlestickSeries, {
-    upColor: '#059669', downColor: '#dc2626', borderVisible: false, wickUpColor: '#059669', wickDownColor: '#dc2626',
+  const candleColours = () => ({
+    upColor: css('--up'), downColor: css('--down'), wickUpColor: css('--up'), wickDownColor: css('--down'),
+  });
+
+  const chart = createChart(el, { autoSize: true, ...colours() });
+  const series = chart.addSeries(CandlestickSeries, { borderVisible: false, ...candleColours() });
+
+  // Light/dark switch clicked: repaint the chart in the new colours
+  window.addEventListener('pf-theme-change', () => {
+    chart.applyOptions(colours());
+    series.applyOptions(candleColours());
   });
 
   let interval = '1m';
