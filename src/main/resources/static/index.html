@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Log in · PaisaFollows</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="auth">
+    <aside class="auth-side">
+      <a href="/" class="brand" style="color:#fff"><img src="/favicon.svg" alt=""><span>PaisaFollows</span></a>
+      <div>
+        <p class="big">Trade the Nifty 50 with live prices.<br>No real money at risk.</p>
+        <p class="lead">Market, limit and stop-loss orders, a live portfolio, watchlists and price alerts, all on a ₹10,000 practice wallet.</p>
+      </div>
+      <p class="note">Paper trading only. Prices are simulated around real NSE closing prices.</p>
+    </aside>
+
+    <main class="auth-main">
+      <div class="auth-box">
+        <h1>Log in</h1>
+        <p class="intro">Demo accounts: demo1 to demo100@paisafollows.test, password password123.</p>
+        <form id="login-form" class="form">
+          <label class="field"><span>Email</span>
+            <input class="input" type="email" name="email" required autocomplete="email" value="demo1@paisafollows.test"></label>
+          <label class="field"><span>Password</span>
+            <input class="input" type="password" name="password" required autocomplete="current-password" value="password123"></label>
+          <p class="error" id="error"></p>
+          <button class="btn btn-primary btn-block" type="submit">Log in</button>
+        </form>
+        <p class="switch">New here? <a class="link" href="/register.html">Create an account</a></p>
+      </div>
+    </main>
+  </div>
+  <script type="module" src="/js/pages/login.js"></script>
+</body>
+</html>

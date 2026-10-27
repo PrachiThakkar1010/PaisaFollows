@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Stock · PaisaFollows</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.3.0/bundles/stomp.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@5.2.1/dist/lightweight-charts.standalone.production.js"></script>
+</head>
+<body>
+  <main class="container">
+    <div id="not-found" class="card hidden" style="padding:32px;text-align:center"></div>
+
+    <div class="grid grid-3" id="stock-page">
+      <!-- left: header, chart, facts, similar -->
+      <div class="span-2 stack">
+        <div class="stock-head">
+          <div>
+            <div class="badges"><h1 id="symbol">…</h1><span id="badges" class="badges"></span></div>
+            <p class="muted" id="company" style="margin-top:4px"></p>
+          </div>
+          <div class="right">
+            <p class="price">₹<span id="price" class="num"></span></p>
+            <p class="num" id="day-change"></p>
+          </div>
+        </div>
+
+        <section class="card">
+          <div class="chart-bar"><div id="interval-tabs"></div><span class="small faint" id="chart-note">Times in IST</span></div>
+          <div id="chart"></div>
+        </section>
+
+        <section class="card">
+          <div class="card-header"><h2>Key facts</h2></div>
+          <dl class="facts" id="facts"></dl>
+          <div id="my-position" class="hidden" style="padding:12px 20px;border-top:1px solid var(--border-soft)"></div>
+        </section>
+
+        <section class="card">
+          <div class="card-header"><h2 id="similar-title">Similar stocks</h2></div>
+          <div id="similar" class="card-body chips"></div>
+        </section>
+      </div>
+
+      <!-- right: trade box + price alert -->
+      <div>
+        <section class="card sticky">
+          <div class="card-header">
+            <h2>Trade</h2>
+            <div class="row" id="watch-box">
+              <select class="input" id="watch-select" style="padding:6px 8px;font-size:12px;width:auto"></select>
+              <button class="btn btn-secondary btn-sm" id="watch-add" type="button">+ Watchlist</button>
+            </div>
+          </div>
+
+          <div class="card-body ticket">
+            <div class="toggle">
+              <button type="button" class="buy active" data-side="BUY">Buy</button>
+              <button type="button" class="sell" data-side="SELL">Sell</button>
+            </div>
+            <div class="types" id="types">
+              <button type="button" data-type="MARKET" class="active">Market</button>
+              <button type="button" data-type="LIMIT">Limit</button>
+              <button type="button" data-type="STOP_LOSS" class="hidden">Stop-loss</button>
+            </div>
+            <p class="small muted" id="type-help" style="margin-top:8px"></p>
+            <div class="form-grid">
+              <label class="field"><span>Quantity</span><input class="input" type="number" min="1" step="1" value="1" id="qty"></label>
+              <label class="field"><span id="price-label">Price (live)</span><input class="input" type="number" min="0.05" step="0.05" id="order-price" disabled></label>
+            </div>
+            <div class="summary">
+              <div><span class="muted" id="estimate-label">Approx. cost</span><span class="num strong" id="estimate"></span></div>
+              <div><span class="muted" id="have-label">Available cash</span><span class="num" id="have"></span></div>
+            </div>
+            <p class="error" id="order-error"></p>
+            <button class="btn btn-buy btn-block" id="place" type="button" style="padding:10px">Buy</button>
+            <p class="small hidden" id="closed-note" style="text-align:center;color:var(--amber)">Market is closed (09:15–15:30 IST, Mon–Fri)</p>
+          </div>
+
+          <div style="border-top:1px solid var(--border-soft)" class="card-body">
+            <p class="strong" style="margin-bottom:12px">Price alert</p>
+            <div class="row">
+              <select class="input" id="alert-dir" style="width:110px"><option value="ABOVE">Above</option><option value="BELOW">Below</option></select>
+              <input class="input grow" type="number" min="0.05" step="0.05" id="alert-target" placeholder="₹" style="flex:1;min-width:0">
+              <button class="btn btn-secondary" id="alert-add" type="button">Set</button>
+            </div>
+            <p class="error" id="alert-error" style="margin-top:8px"></p>
+            <p class="small muted" style="margin-top:8px">The database marks the alert as triggered within seconds of the price crossing it. <a class="link" href="/alerts.html">All alerts</a></p>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+  <script type="module" src="/js/pages/stock.js"></script>
+</body>
+</html>

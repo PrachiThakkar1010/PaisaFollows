@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Create account · PaisaFollows</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="auth">
+    <aside class="auth-side">
+      <a href="/" class="brand" style="color:#fff"><img src="/favicon.svg" alt=""><span>PaisaFollows</span></a>
+      <div>
+        <p class="big">Learn to invest<br>without risking a rupee.</p>
+        <p class="lead">Under 18? You can still trade equity. Adults also get commodity and F&amp;O segments.</p>
+      </div>
+      <p class="note">Paper trading only. No real money is ever involved.</p>
+    </aside>
+
+    <main class="auth-main">
+      <div class="auth-box">
+        <h1>Create your account</h1>
+        <p class="intro">You get ₹10,000 of practice money to trade with.</p>
+        <form id="register-form" class="form">
+          <label class="field"><span>Full name</span><input class="input" name="fullName" required maxlength="100"></label>
+          <label class="field"><span>Email</span><input class="input" type="email" name="email" required></label>
+          <label class="field"><span>Password</span>
+            <input class="input" type="password" name="password" required minlength="8" maxlength="72">
+            <span class="hint">8 to 72 characters</span></label>
+          <div class="form-grid">
+            <label class="field"><span>Date of birth</span><input class="input" type="date" name="dateOfBirth" required></label>
+            <label class="field"><span>Mobile (optional)</span>
+              <input class="input" name="phone" inputmode="numeric" pattern="[6-9][0-9]{9}" title="10-digit Indian mobile number"></label>
+          </div>
+          <label class="field"><span>PAN</span>
+            <input class="input" name="pan" required pattern="[A-Za-z]{5}[0-9]{4}[A-Za-z]" title="Like ABCDE1234F" style="text-transform:uppercase">
+            <span class="hint">Format ABCDE1234F</span></label>
+          <p class="error" id="error"></p>
+          <button class="btn btn-primary btn-block" type="submit">Create account</button>
+        </form>
+        <p class="switch">Already have an account? <a class="link" href="/index.html">Log in</a></p>
+      </div>
+    </main>
+  </div>
+  <script type="module" src="/js/pages/register.js"></script>
+</body>
+</html>

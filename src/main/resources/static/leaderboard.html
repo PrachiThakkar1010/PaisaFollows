@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Leaderboard · PaisaFollows</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.3.0/bundles/stomp.umd.min.js"></script>
+</head>
+<body>
+  <main class="container">
+    <div class="page-header"><div><h1>Leaderboard</h1><p>Top investors by total value (cash + holdings at live prices)</p></div></div>
+    <!-- Derived table + fn_portfolio_value + GROUP BY deposits -->
+    <section class="card">
+      <div class="card-header"><div><h2>Top 25</h2><p>Return = total value compared with everything deposited</p></div></div>
+      <div id="board"></div>
+    </section>
+  </main>
+  <script type="module" src="/js/pages/leaderboard.js"></script>
+</body>
+</html>

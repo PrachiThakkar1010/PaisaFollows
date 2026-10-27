@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Alerts · PaisaFollows</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.3.0/bundles/stomp.umd.min.js"></script>
+</head>
+<body>
+  <main class="container">
+    <div class="page-header"><div><h1>Price alerts</h1><p>Get flagged when a stock crosses your price. Checked by the database on every price update.</p></div></div>
+
+    <div class="grid grid-3">
+      <section class="card">
+        <div class="card-header"><h2>New alert</h2></div>
+        <div class="card-body form">
+          <div class="field"><span>Stock</span>
+            <div id="chosen" class="hidden" style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border:1px solid #cbd5e1;border-radius:8px"></div>
+            <div id="alert-search"></div>
+          </div>
+          <div class="form-grid">
+            <label class="field"><span>When price goes</span>
+              <select class="input" id="direction"><option value="ABOVE">Above</option><option value="BELOW">Below</option></select></label>
+            <label class="field"><span>Target ₹</span><input class="input" type="number" min="0.05" step="0.05" id="target"></label>
+          </div>
+          <p class="error" id="create-error"></p>
+          <button class="btn btn-primary btn-block" id="create" type="button">Create alert</button>
+        </div>
+      </section>
+
+      <section class="card span-2">
+        <div class="card-header"><h2>My alerts</h2><div id="status-tabs"></div></div>
+        <div id="alerts"></div>
+      </section>
+    </div>
+  </main>
+  <script type="module" src="/js/pages/alerts.js"></script>
+</body>
+</html>

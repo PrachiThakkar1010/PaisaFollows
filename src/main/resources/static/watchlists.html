@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Watchlists · PaisaFollows</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.3.0/bundles/stomp.umd.min.js"></script>
+</head>
+<body>
+  <main class="container">
+    <div class="page-header"><div><h1>Watchlists</h1><p>Track stocks without buying them</p></div></div>
+
+    <div class="grid grid-1-3">
+      <!-- My watchlists: LEFT JOIN + COUNT -->
+      <section class="card">
+        <div class="card-header"><h2>My watchlists</h2></div>
+        <ul class="side-list" id="lists"></ul>
+        <div class="row" style="padding:12px;border-top:1px solid var(--border-soft)">
+          <input class="input grow" id="new-name" placeholder="New list, e.g. Banks" style="flex:1;min-width:0">
+          <button class="btn btn-secondary" id="create" type="button">Add</button>
+        </div>
+      </section>
+
+      <!-- Items: LEFT JOIN prices + EXISTS (owned badge) -->
+      <section class="card">
+        <div class="card-header"><h2 id="list-name">Watchlist</h2><button class="btn btn-danger btn-sm" id="delete-list" type="button">Delete list</button></div>
+        <div class="card-section">
+          <div id="add-search"></div>
+          <p class="error" id="add-error" style="margin-top:8px"></p>
+          <div class="chips small" id="suggestions" style="margin-top:8px"></div>
+        </div>
+        <div id="items"></div>
+      </section>
+    </div>
+
+    <!-- My stocks: FULL OUTER JOIN, INTERSECT, EXCEPT, UNION ALL, ANY -->
+    <section class="card mt">
+      <div class="card-header"><div><h2>My stocks</h2><p>What you watch and what you own, compared</p></div><div id="my-tabs"></div></div>
+      <div id="my-stocks"></div>
+    </section>
+  </main>
+  <script type="module" src="/js/pages/watchlists.js"></script>
+</body>
+</html>

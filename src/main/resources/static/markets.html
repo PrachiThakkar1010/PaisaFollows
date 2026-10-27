@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Markets · PaisaFollows</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.3.0/bundles/stomp.umd.min.js"></script>
+</head>
+<body>
+  <main class="container">
+    <div class="page-header">
+      <div><h1>Markets</h1><p>All Nifty 50 stocks with live prices</p></div>
+      <div id="view-tabs"></div>
+    </div>
+
+    <!-- Screener: WHERE, IN, BETWEEN, ORDER BY, LIMIT, OFFSET -->
+    <section class="card" id="screener-view">
+      <div class="card-section">
+        <div class="chips" id="sector-chips"></div>
+        <div class="form-grid-4" style="margin-top:16px">
+          <label class="field"><span>Min price ₹</span><input class="input" type="number" min="0" id="min-price"></label>
+          <label class="field"><span>Max price ₹</span><input class="input" type="number" min="0" id="max-price"></label>
+          <label class="field"><span>Sort by</span>
+            <select class="input" id="sort">
+              <option value="change">% change</option><option value="price">Price</option>
+              <option value="symbol">Symbol</option><option value="name">Name</option>
+            </select></label>
+          <label class="field"><span>Order</span>
+            <select class="input" id="dir"><option value="desc">High to low</option><option value="asc">Low to high</option></select></label>
+        </div>
+      </div>
+      <div id="screener-table"></div>
+      <div id="screener-pager"></div>
+    </section>
+
+    <!-- What can I afford? CROSS JOIN -->
+    <section class="card hidden" id="affordable-view">
+      <div class="card-header"><div><h2>What can I afford?</h2><p>Your available cash × every stock: the most whole shares you could buy right now</p></div></div>
+      <div id="affordable-table"></div>
+    </section>
+
+    <!-- Sector ranking: GROUP BY + HAVING -->
+    <section class="card hidden" id="sectors-view">
+      <div class="card-header">
+        <div><h2>Sector ranking</h2><p>Live average change, only sectors with enough stocks</p></div>
+        <select class="input" id="min-stocks" style="width:140px">
+          <option value="1">1+ stocks</option><option value="2">2+ stocks</option><option value="3" selected>3+ stocks</option>
+          <option value="4">4+ stocks</option><option value="5">5+ stocks</option>
+        </select>
+      </div>
+      <div id="sectors-table"></div>
+    </section>
+  </main>
+  <script type="module" src="/js/pages/markets.js"></script>
+</body>
+</html>

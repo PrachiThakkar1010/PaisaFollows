@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Portfolio · PaisaFollows</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.3.0/bundles/stomp.umd.min.js"></script>
+</head>
+<body>
+  <main class="container">
+    <div class="page-header">
+      <div><h1>Portfolio</h1><p id="cash-line"></p></div>
+      <div id="view-tabs"></div>
+    </div>
+
+    <!-- Holdings: view v_portfolio_holdings + function fn_portfolio_value -->
+    <div id="holdings-view">
+      <div class="grid grid-4 gap-16" id="stats"></div>
+      <section class="card mt hidden" id="alloc-card">
+        <div class="card-body"><p class="strong" style="margin-bottom:12px">Allocation by sector</p><div class="alloc" id="alloc"></div><div class="legend" id="legend"></div></div>
+      </section>
+      <section class="card mt">
+        <div class="card-header"><div><h2>Holdings</h2><p>Values recalculated with every live price</p></div></div>
+        <div id="holdings"></div>
+      </section>
+    </div>
+
+    <!-- Statement: stored procedure sp_account_statement -->
+    <section class="card hidden" id="statement-view">
+      <div class="card-header"><div><h2>Account statement</h2><p>Every money movement in the period (from the sp_account_statement procedure)</p></div></div>
+      <div class="card-section row">
+        <label class="field"><span>From</span><input class="input" type="date" id="from"></label>
+        <label class="field"><span>To</span><input class="input" type="date" id="to"></label>
+        <button class="btn btn-secondary" id="show-statement" type="button">Show</button>
+        <div id="totals" class="row" style="margin-left:auto;gap:24px"></div>
+      </div>
+      <div id="statement"></div>
+    </section>
+
+    <!-- Balance history: rows written by the trg_wallet_audit trigger -->
+    <section class="card hidden" id="balance-view">
+      <div class="card-header"><div><h2>Balance history</h2><p>Before and after of every balance change, written by the trg_wallet_audit trigger</p></div></div>
+      <div id="balance"></div>
+    </section>
+  </main>
+  <script type="module" src="/js/pages/portfolio.js"></script>
+</body>
+</html>

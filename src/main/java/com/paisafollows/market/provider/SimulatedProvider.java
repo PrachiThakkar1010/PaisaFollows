@@ -53,11 +53,28 @@ public class SimulatedProvider {
         this.enabled = "simulated".equalsIgnoreCase(provider);
     }
 
-    /** Runs once, when the app has fully started. */
+    /**
+     * Runs once, when the app has fully started.
+     * If the database is slow or unreachable at that moment, the app keeps running
+     * and retryIfNotLoaded() tries again every 15 s, instead of the whole app crashing.
+     */
     @EventListener(ApplicationReadyEvent.class)
     public void start() {
-        if (enabled) {
+        if (!enabled) {
+            return;
+        }
+        try {
             reloadStocks();
+        } catch (RuntimeException e) {
+            log.warn("Could not load stocks from the database ({}). Retrying in 15 s...", e.getMessage());
+        }
+    }
+
+    /** Every 15 s: if no stocks are loaded yet (database was down at start-up), try again. */
+    @Scheduled(fixedDelay = 15000, initialDelay = 15000)
+    public void retryIfNotLoaded() {
+        if (enabled && stocks.isEmpty()) {
+            start();
         }
     }
 

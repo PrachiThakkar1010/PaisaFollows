@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard · PaisaFollows</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.3.0/bundles/stomp.umd.min.js"></script>
+</head>
+<body>
+  <main class="container">
+    <div class="page-header">
+      <div><h1 id="hello">Hello</h1><p>Your paper-trading account at a glance. Prices update every second.</p></div>
+    </div>
+
+    <div class="grid grid-4 gap-16" id="stats"></div>
+
+    <div class="grid grid-3 mt">
+      <section class="card span-2">
+        <div class="card-header"><h2>Your holdings</h2><a class="link small" href="/portfolio.html">View all</a></div>
+        <div id="holdings"></div>
+      </section>
+      <section class="card">
+        <div class="card-header"><div><h2>Market breadth</h2><p>Nifty 50 today</p></div></div>
+        <div id="breadth"></div>
+      </section>
+    </div>
+
+    <div class="grid grid-2 mt">
+      <section class="card"><div class="card-header"><h2>Top gainers</h2></div><div id="gainers"></div></section>
+      <section class="card"><div class="card-header"><h2>Top losers</h2></div><div id="losers"></div></section>
+    </div>
+
+    <section class="card mt">
+      <div class="card-header"><div><h2>Sector heatmap</h2><p>Average change per sector · refreshed every 5 minutes</p></div></div>
+      <div id="heatmap"></div>
+    </section>
+  </main>
+  <script type="module" src="/js/pages/dashboard.js"></script>
+</body>
+</html>

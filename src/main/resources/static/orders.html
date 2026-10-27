@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Orders · PaisaFollows</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.3.0/bundles/stomp.umd.min.js"></script>
+</head>
+<body>
+  <main class="container">
+    <div class="page-header">
+      <div><h1>Orders</h1><p>Waiting limit and stop-loss orders fill automatically; you get a notification when they do.</p></div>
+    </div>
+
+    <!-- Order history: LEFT JOIN, ORDER BY, LIMIT, OFFSET -->
+    <section class="card">
+      <div class="card-header"><h2>Order history</h2><div id="status-tabs"></div></div>
+      <div id="orders"></div>
+      <div id="orders-pager"></div>
+    </section>
+
+    <!-- Basket: one transaction, one SAVEPOINT per stock -->
+    <section class="card mt" style="max-width:672px">
+      <div class="card-header"><div><h2>Basket order</h2><p>Up to 10 market orders at once. If one fails, only that one is rolled back (SQL SAVEPOINT); the rest still go through.</p></div></div>
+      <div class="card-body">
+        <div id="legs" class="form"></div>
+        <div class="row" style="margin-top:12px">
+          <button class="btn btn-secondary btn-sm" id="add-leg" type="button">+ Add stock</button>
+          <button class="btn btn-primary btn-sm" id="place-basket" type="button" style="margin-left:auto">Place basket</button>
+        </div>
+        <p class="error" id="basket-error" style="margin-top:12px"></p>
+      </div>
+      <div id="basket-result"></div>
+    </section>
+  </main>
+  <script type="module" src="/js/pages/orders.js"></script>
+</body>
+</html>

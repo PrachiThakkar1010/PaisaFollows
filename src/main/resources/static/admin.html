@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin · PaisaFollows</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.3.0/bundles/stomp.umd.min.js"></script>
+</head>
+<body>
+  <main class="container">
+    <div class="page-header"><div><h1>Admin</h1><p>Maintenance tools. Each one runs a different kind of SQL (named under each title).</p></div></div>
+
+    <div class="grid grid-2">
+      <section class="card">
+        <div class="card-header"><div><h2>Rename a stock symbol</h2><p>UPDATE with ON UPDATE CASCADE: price alerts follow automatically</p></div></div>
+        <div class="card-body row">
+          <label class="field"><span>Current symbol</span><input class="input" id="old-symbol" placeholder="TRENT" style="width:140px;text-transform:uppercase"></label>
+          <label class="field"><span>New symbol</span><input class="input" id="new-symbol" placeholder="TRENTLTD" style="width:140px;text-transform:uppercase"></label>
+          <button class="btn btn-primary" id="rename" type="button">Rename</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-header"><div><h2>Delist or re-list a stock</h2><p>DELETE without cascade is refused for traded stocks, so it is marked INACTIVE</p></div></div>
+        <div class="card-body row">
+          <label class="field"><span>Symbol</span><input class="input" id="list-symbol" placeholder="WIPRO" style="width:140px;text-transform:uppercase"></label>
+          <button class="btn btn-danger" id="delist" type="button">Delist</button>
+          <button class="btn btn-secondary" id="activate" type="button">Activate</button>
+        </div>
+      </section>
+    </div>
+
+    <section class="card mt">
+      <div class="card-header">
+        <div><h2>Price history archives</h2><p>Archive = CREATE TABLE … LIKE + ALTER + RENAME · Drop = DROP TABLE · Reset = TRUNCATE</p></div>
+        <div class="row">
+          <button class="btn btn-primary btn-sm" id="archive" type="button">Archive now</button>
+          <button class="btn btn-danger btn-sm" id="reset" type="button">Reset</button>
+        </div>
+      </div>
+      <div id="archives"></div>
+    </section>
+  </main>
+  <script type="module" src="/js/pages/admin.js"></script>
+</body>
+</html>
